@@ -1,0 +1,16 @@
+/* 
+  Localizable.strings
+  inewshub
+
+  Created by seevsk on 3/10/25.
+  
+*/
+
+"obng_title_1" = "Stay refreshed, stay informed now";
+"obng_title_2" = "Get the latest updates at your fingertips";
+"obng_title_3" = "Stay connected and explore NewsHub today";
+
+"obng_btn_1" = "Get Started";
+"obng_btn_2" = "Stay Informed";
+"obng_btn_3" = "Join Now";
+
