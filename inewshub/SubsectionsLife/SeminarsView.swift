@@ -8,13 +8,13 @@
 
 import SwiftUI
 
-// MARK: - Data Manager para Seminars (usa endpoint seminars.php)
+// MARK: - Data Manager para Seminars
 class DataManagerSeminars: ObservableObject {
     @Published var seminars: [Article] = []
     @Published var isLoading = false
 
     func fetchSeminars() {
-        guard let url = URL(string: "https://seevsk.alwaysdata.net/inewshub/articles/seminars.php") else {
+        guard let url = URL(string: Constants.API_URL + "?type=seminars") else {
             print("URL inválida")
             return
         }
@@ -37,10 +37,9 @@ class DataManagerSeminars: ObservableObject {
             }
 
             do {
-                // Decodificamos directamente artículos
-                let decoded = try JSONDecoder().decode([Article].self, from: data)
+                let decoded = try JSONDecoder().decode(APIResponse<ItemsPayload<Article>>.self, from: data)
                 DispatchQueue.main.async {
-                    self.seminars = decoded
+                    self.seminars = decoded.data.items
                 }
             } catch {
                 print("Error al decodificar JSON:", error)
@@ -57,7 +56,7 @@ struct SeminarCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             // MARK: Imagen superior
             GeometryReader { geo in
-                AsyncImage(url: URL(string: "https://seevsk.alwaysdata.net/inewshub/drawable/\(item.content_type)/\(item.hero_image)")) { phase in
+                AsyncImage(url: URL(string: item.hero_image ?? "")) { phase in
                     switch phase {
                     case .success(let image):
                         image
@@ -134,7 +133,7 @@ struct SeminarsView: View {
             } else {
                 LazyVGrid(columns: columnas, spacing: 18) {
                     ForEach(dataManager.seminars) { item in
-                        NavigationLink(destination: ArticleDetailView(articleId: item.id)) {
+                        NavigationLink(destination: ArticleDetailView(articleSlug: item.slug)) {
                                 SeminarCardView(item: item)
                                     .frame(maxWidth: .infinity, minHeight: 200)
                                 }
