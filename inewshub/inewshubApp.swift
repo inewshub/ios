@@ -15,10 +15,8 @@ struct inewshubApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                ArticleDetailView(articleSlug: "un-climate-session-geneva")
-            }
-            .environmentObject(apiManager)
+            DashboardView()
+                .environmentObject(apiManager)
         }.modelContainer(for: NewsLocal.self)
     }
 }
