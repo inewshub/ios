@@ -11,22 +11,12 @@ import SwiftData
 @main
 struct inewshubApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @State private var showIntro = true
     @StateObject var apiManager = UsersApiManager()
 
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                if !showIntro {
-                    ContentView()
-                        .environmentObject(apiManager)
-                }
-                if showIntro {
-                    LaunchScreen(showIntro: $showIntro)
-                        .transition(.opacity)
-                        .environmentObject(apiManager)
-                }
-            }
+            ContentView()
+                .environmentObject(apiManager)
         }.modelContainer(for: NewsLocal.self)
     }
 }
