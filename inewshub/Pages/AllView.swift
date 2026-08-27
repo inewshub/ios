@@ -47,7 +47,7 @@ class DataManagerAll: ObservableObject {
 
 struct AllView: View {
     @StateObject private var dataManager = DataManagerAll()
-    @State private var selectedSection = 3
+    @State private var selectedSection = 2
     @Namespace private var underlineAnimation
     @State private var currentPage = 0
 
