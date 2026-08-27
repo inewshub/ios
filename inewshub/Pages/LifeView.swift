@@ -10,7 +10,7 @@
 import SwiftUI
 
 struct LifeView: View {
-    @State private var selectedSection = 2
+    @State private var selectedSection = 0
     
     var body: some View {
         VStack(spacing: 0) {
