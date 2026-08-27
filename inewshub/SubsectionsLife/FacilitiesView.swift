@@ -13,7 +13,7 @@ class DataManagerFacilities: ObservableObject {
     @Published var isLoading = false
 
     func fetchFacilities() {
-        guard let url = URL(string: "https://seevsk.alwaysdata.net/inewshub/sub_facilities/facilities.php") else {
+        guard let url = URL(string: Constants.FACILITIES_URL) else {
             print("URL inválida")
             return
         }
@@ -33,9 +33,9 @@ class DataManagerFacilities: ObservableObject {
             }
 
             do {
-                let result = try JSONDecoder().decode([Facility].self, from: data)
+                let result = try JSONDecoder().decode(APIResponse<ItemsPayload<Facility>>.self, from: data)
                 DispatchQueue.main.async {
-                    self.facilities = result
+                    self.facilities = result.data.items
                 }
             } catch {
                 print("Error al decodificar JSON: \(error)")
@@ -66,7 +66,7 @@ struct FacilitiesView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 ZStack(alignment: .topTrailing) {
                             
-                                    AsyncImage(url: URL(string: "https://seevsk.alwaysdata.net/inewshub/drawable/facilities/\(item.image_url ?? "")")) { phase in
+                                    AsyncImage(url: URL(string: item.image_url ?? "")) { phase in
                                         switch phase {
                                         case .success(let image):
                                             image
@@ -118,8 +118,8 @@ struct FacilitiesView: View {
                                         Spacer()
                                         HStack(spacing: 3) {
                                             ForEach(0..<5, id: \.self) { star in
-                                                Image(systemName: star < (item.stars) ? "star.fill" : "star")
-                                                    .foregroundColor(star < (item.stars) ? .yellow : .gray.opacity(0.4))
+                                                Image(systemName: star < (item.stars ?? 0) ? "star.fill" : "star")
+                                                    .foregroundColor(star < (item.stars ?? 0) ? .yellow : .gray.opacity(0.4))
                                                     .font(.system(size: 14))
                                             }
                                         }

@@ -40,7 +40,7 @@ struct GoogleMapView: UIViewRepresentable {
         let marker = GMSMarker()
         marker.position = position
         marker.title = facility.name
-        marker.snippet = " \(facility.stars) estrellas"
+        marker.snippet = " \(facility.stars ?? 0) estrellas"
         marker.map = uiView
         
         let circle = GMSCircle(position: position, radius: 500)
