@@ -14,12 +14,12 @@ jobs:
 
       - name: Boot Simulator
         run: |
-          xcrun simctl boot "iPhone 15" || true
+          xcrun simctl boot "iPhone 17" || true
           sleep 10
 
       - name: Install App
         run: |
-          xcodebuild -scheme inewshub -destination 'platform=iOS Simulator,name=iPhone 15' -derivedDataPath build
+          xcodebuild -scheme inewshub -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath build
           xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/*.app
 
       - name: Launch App
