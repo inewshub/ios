@@ -11,15 +11,22 @@ struct Article: Codable, Identifiable {
     let id: Int
     let title: String
     let excerpt: String
-    let body: String
+    let slug: String
     let content_type: String
+    let hero_image: String?
     let is_story: Int
-    let hero_image: String
     let author_id: Int?
-    let is_published: Int
-    let is_active: Int
-    let published_at: String      
-    let updated_at: String
+    let published_at: String
 
-    var idString: String { String(id) } 
+    // Only present on the detail endpoint (GET /articles/{slug})
+    let body: String?
+    let updated_at: String?
+    let images: [ArticleImage]?
+
+    var idString: String { String(id) }
+}
+
+struct ArticleImage: Codable {
+    let image_url: String
+    let sort_order: Int
 }

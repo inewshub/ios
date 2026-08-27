@@ -1,0 +1,37 @@
+name: Build Check
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: xcodebuild build -scheme inewshub -destination 'generic/platform=iOS Simulator'
+
+      - name: Boot Simulator
+        run: |
+          xcrun simctl boot "iPhone 17" || true
+          sleep 10
+
+      - name: Install App
+        run: |
+          xcodebuild -scheme inewshub -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath build
+          xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/*.app
+
+      - name: Launch App
+        run: |
+          xcrun simctl launch booted com.seevsk.inewshub
+          sleep 15
+
+      - name: Take Screenshot
+        run: xcrun simctl io booted screenshot screenshot-1.png
+
+      - name: Upload Screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-screenshots
+          path: screenshot-*.png

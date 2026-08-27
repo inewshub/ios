@@ -13,7 +13,7 @@ class DataManagerEvents: ObservableObject {
     @Published var isLoading = false
 
     func fetchEvents() {
-        guard let url = URL(string: "https://seevsk.alwaysdata.net/inewshub/articles/event.php") else {
+        guard let url = URL(string: Constants.API_URL + "?type=event") else {
             print("URL inválida")
             return
         }
@@ -36,10 +36,9 @@ class DataManagerEvents: ObservableObject {
             }
 
             do {
-                // Decodificamos directamente artículos
-                let decoded = try JSONDecoder().decode([Article].self, from: data)
+                let decoded = try JSONDecoder().decode(APIResponse<ItemsPayload<Article>>.self, from: data)
                 DispatchQueue.main.async {
-                    self.events = decoded
+                    self.events = decoded.data.items
                 }
             } catch {
                 print("Error al decodificar JSON:", error)
@@ -56,7 +55,7 @@ struct EventCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             // MARK: Imagen superior
             GeometryReader { geo in
-                AsyncImage(url: URL(string: "https://seevsk.alwaysdata.net/inewshub/drawable/\(item.content_type)/\(item.hero_image)")) { phase in
+                AsyncImage(url: URL(string: item.hero_image ?? "")) { phase in
                     switch phase {
                     case .success(let image):
                         image
@@ -133,7 +132,7 @@ struct EventsView: View {
             } else {
                 LazyVGrid(columns: columnas, spacing: 18) {
                     ForEach(dataManager.events) { item in
-                        NavigationLink(destination: ArticleDetailView(articleId: item.id)) {
+                        NavigationLink(destination: ArticleDetailView(articleSlug: item.slug)) {
                             EventCardView(item: item)
                                 .frame(maxWidth: .infinity, minHeight: 200)
                         }

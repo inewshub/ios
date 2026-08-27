@@ -12,35 +12,35 @@ class DataManagerAll: ObservableObject {
     @Published var isLoading = false
     
     func ReadAll() {
-        guard let url = URL(string: Constants.API_URL + "all.php") else {
+        guard let url = URL(string: Constants.API_URL) else {
             print("URL invalido")
             return
         }
-        
+
         DispatchQueue.main.async {
             self.isLoading = true
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
-            
+
             DispatchQueue.main.async {
                 self.isLoading = false
             }
-            
+
             guard let data = data else {
                 print("No se encuentran datos para leer")
                 return
             }
-            
+
             do {
-                let allJSON = try JSONDecoder().decode([Article].self, from: data)
+                let decoded = try JSONDecoder().decode(APIResponse<ItemsPayload<Article>>.self, from: data)
                 DispatchQueue.main.async {
-                    self.all = allJSON
+                    self.all = decoded.data.items
                 }
             } catch {
                 print("Error al decodificar JSON: \(error)")
             }
-            
+
         }.resume()
     }
 }
@@ -138,11 +138,9 @@ private extension AllView {
                 ForEach(top.indices, id: \.self) { index in
                     let current = top[index]
                     
-                    NavigationLink(destination: ArticleDetailView(articleId: current.id)) {
+                    NavigationLink(destination: ArticleDetailView(articleSlug: current.slug)) {
                         ZStack(alignment: .bottomLeading) {
-                            let imageURL = "https://seevsk.alwaysdata.net/inewshub/drawable/\(current.content_type)/\(current.hero_image)"
-                            
-                            AsyncImage(url: URL(string: imageURL)) { phase in
+                            AsyncImage(url: URL(string: current.hero_image ?? "")) { phase in
                                 switch phase {
                                 case .empty:
                                     ProgressView()
@@ -235,10 +233,9 @@ private extension AllView {
     func recommendationList(_ rest: [Article]) -> some View {
         LazyVStack(alignment: .leading, spacing: 14) {
             ForEach(rest) { item in
-                NavigationLink(destination: ArticleDetailView(articleId: item.id)) {
+                NavigationLink(destination: ArticleDetailView(articleSlug: item.slug)) {
                 HStack(alignment: .top, spacing: 12) {
-                    let imageURL = "https://seevsk.alwaysdata.net/inewshub/drawable/\(item.content_type)/\(item.hero_image)"
-                    AsyncImage(url: URL(string: imageURL)) { phase in
+                    AsyncImage(url: URL(string: item.hero_image ?? "")) { phase in
                         switch phase {
                         case .empty: ProgressView()
                         case .success(let image):
