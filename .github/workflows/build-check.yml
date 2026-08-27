@@ -25,7 +25,7 @@ jobs:
       - name: Launch App
         run: |
           xcrun simctl launch booted com.seevsk.inewshub
-          sleep 5
+          sleep 15
 
       - name: Take Screenshot
         run: xcrun simctl io booted screenshot screenshot-1.png
