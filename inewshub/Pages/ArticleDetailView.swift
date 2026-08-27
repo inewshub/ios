@@ -14,8 +14,8 @@ class DataManagerArticleDetail: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    func fetchArticleDetail(id: Int) {
-        guard let url = URL(string: "https://seevsk.alwaysdata.net/inewshub/articles/details.php?id=\(id)") else {
+    func fetchArticleDetail(slug: String) {
+        guard let url = URL(string: "\(Constants.API_URL)/\(slug)") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -35,11 +35,11 @@ class DataManagerArticleDetail: ObservableObject {
             }
 
             do {
-                let decoded = try JSONDecoder().decode(Article.self, from: data)
+                let decoded = try JSONDecoder().decode(APIResponse<Article>.self, from: data)
                 DispatchQueue.main.async {
-                    self.article = decoded
+                    self.article = decoded.data
                     // Trae artículos del mismo tipo
-                    self.fetchRelatedArticles(of: decoded.content_type)
+                    self.fetchRelatedArticles(of: decoded.data.content_type)
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -50,13 +50,13 @@ class DataManagerArticleDetail: ObservableObject {
     }
 
     private func fetchRelatedArticles(of type: String) {
-        guard let url = URL(string: "https://seevsk.alwaysdata.net/inewshub/articles/\(type).php") else { return }
+        guard let url = URL(string: "\(Constants.API_URL)?type=\(type)") else { return }
 
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data = data else { return }
-            if let decoded = try? JSONDecoder().decode([Article].self, from: data) {
+            if let decoded = try? JSONDecoder().decode(APIResponse<ItemsPayload<Article>>.self, from: data) {
                 DispatchQueue.main.async {
-                    self.relatedArticles = Array(decoded.prefix(3))
+                    self.relatedArticles = Array(decoded.data.items.prefix(3))
                 }
             }
         }.resume()
@@ -65,7 +65,7 @@ class DataManagerArticleDetail: ObservableObject {
 
 // MARK: - Vista de detalle de artículo
 struct ArticleDetailView: View {
-    let articleId: Int
+    let articleSlug: String
     @StateObject private var dataManager = DataManagerArticleDetail()
 
     var body: some View {
@@ -77,7 +77,7 @@ struct ArticleDetailView: View {
                 VStack(alignment: .leading, spacing: 15) {
                     
                     // MARK: Imagen principal
-                    AsyncImage(url: URL(string: "https://seevsk.alwaysdata.net/inewshub/drawable/\(article.content_type)/\(article.hero_image)")) { phase in
+                    AsyncImage(url: URL(string: article.hero_image ?? "")) { phase in
                         switch phase {
                         case .empty: ProgressView()
                         case .success(let image):
@@ -120,7 +120,7 @@ struct ArticleDetailView: View {
                         .padding(.horizontal, 20)
                     
                     // MARK: Cuerpo del artículo
-                    Text(article.body)
+                    Text(article.body ?? "")
                         .font(.system(size: 17))
                         .foregroundColor(.black)
                         .multilineTextAlignment(.leading)
@@ -140,11 +140,9 @@ struct ArticleDetailView: View {
                     // MARK: Lista de artículos relacionados (idéntica a recommendationList)
                     LazyVStack(alignment: .leading, spacing: 14) {
                         ForEach(dataManager.relatedArticles) { item in
-                            NavigationLink(destination: ArticleDetailView(articleId: item.id)) {
+                            NavigationLink(destination: ArticleDetailView(articleSlug: item.slug)) {
                                 HStack(alignment: .top, spacing: 12) {
-                                    let imageURL = "https://seevsk.alwaysdata.net/inewshub/drawable/\(item.content_type)/\(item.hero_image)"
-                                    
-                                    AsyncImage(url: URL(string: imageURL)) { phase in
+                                    AsyncImage(url: URL(string: item.hero_image ?? "")) { phase in
                                         switch phase {
                                         case .empty:
                                             ZStack {
@@ -217,7 +215,7 @@ struct ArticleDetailView: View {
             }
         }
         .onAppear {
-            dataManager.fetchArticleDetail(id: articleId)
+            dataManager.fetchArticleDetail(slug: articleSlug)
         }
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
@@ -228,6 +226,6 @@ struct ArticleDetailView: View {
 
 #Preview {
     NavigationStack {
-        ArticleDetailView(articleId: 1)
+        ArticleDetailView(articleSlug: "peru-emergency-lima-callao")
     }
 }
