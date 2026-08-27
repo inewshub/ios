@@ -16,7 +16,7 @@ struct inewshubApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                NewsView()
+                EventsView()
             }
             .environmentObject(apiManager)
         }.modelContainer(for: NewsLocal.self)
